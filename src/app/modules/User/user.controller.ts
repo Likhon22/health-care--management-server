@@ -1,7 +1,7 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import userServices from "./user.service";
 
-const createAdmin = async (req: Request, res: Response) => {
+const createAdmin = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const result = await userServices.createAdminIntoDB(req.body);
     res.status(200).json({
@@ -10,11 +10,7 @@ const createAdmin = async (req: Request, res: Response) => {
       success: true,
     });
   } catch (err) {
-    res.status(500).json({
-      message: err?.name || "Internal server error",
-      success: false,
-      error: err,
-    });
+    next(err);
   }
 };
 

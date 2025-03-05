@@ -1,7 +1,8 @@
-import { Prisma } from "@prisma/client";
+import { Admin, Prisma } from "@prisma/client";
 import { adminSearchAbleFields } from "./admin.constants";
 import { calculatePagination } from "../../helpars/paginationHelper";
 import prisma from "../../shared/prisma";
+
 const getAdminFromDB = async (params: Record<string, any>, options: any) => {
   const { searchTerm, ...filteredData } = params;
 
@@ -44,6 +45,9 @@ const getAdminFromDB = async (params: Record<string, any>, options: any) => {
       });
     });
   }
+  andCondition.push({
+    isDeleted: false,
+  });
   const { page, limit, skip, sortBy, sortOrder } = calculatePagination(options);
 
   const whereInput: Prisma.AdminWhereInput = { AND: andCondition };
@@ -67,17 +71,67 @@ const getAdminFromDB = async (params: Record<string, any>, options: any) => {
     },
   };
 };
-const getSingleAdminFromDB = async (id: string) => {
-  const result = await prisma.admin.findUnique({
+const getSingleAdminFromDB = async (id: string): Promise<Admin | null> => {
+  const result = await prisma.admin.findUniqueOrThrow({
     where: {
       id,
+      isDeleted: false,
     },
   });
   return result;
 };
+const updateAdminInDB = async (
+  id: string,
+  payload: Partial<Admin>
+): Promise<Admin> => {
+  await prisma.admin.findUniqueOrThrow({
+    where: {
+      id,
+      isDeleted: false,
+    },
+  });
+  const result = await prisma.admin.update({
+    where: {
+      id,
+    },
+    data: payload,
+  });
+  return result;
+};
+const deleteAdminFromDB = async (id: string): Promise<Admin | null> => {
+  await prisma.admin.findUniqueOrThrow({
+    where: {
+      id,
+      isDeleted: false,
+    },
+  });
+  const result = await prisma.$transaction(async (tsx) => {
+    const adminDeletedData = await tsx.admin.update({
+      where: {
+        id,
+      },
+      data: {
+        isDeleted: true,
+      },
+    });
+    const userDeletedData = await tsx.user.update({
+      where: {
+        email: adminDeletedData.email,
+      },
+      data: {
+        status: "DELETED",
+      },
+    });
+    return adminDeletedData;
+  });
+  return result;
+};
+
 const adminServices = {
   getAdminFromDB,
   getSingleAdminFromDB,
+  updateAdminInDB,
+  deleteAdminFromDB,
 };
 
 export default adminServices;

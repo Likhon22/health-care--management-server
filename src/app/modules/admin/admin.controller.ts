@@ -1,9 +1,10 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import adminServices from "./admin.service";
 import { pick } from "../../shared/pick";
 import { adminFilterableFields } from "./admin.constants";
-
-const getAdmin = async (req: Request, res: Response) => {
+import { sendResponse } from "../../shared/sendResponse";
+import httpStatus from "http-status";
+const getAdmin = async (req: Request, res: Response, next: NextFunction) => {
   const filters = pick(req.query, adminFilterableFields);
   const options = pick(req.query, ["limit", "page", "sortBy", "sortOrder"]);
   try {
@@ -11,41 +12,72 @@ const getAdmin = async (req: Request, res: Response) => {
 
     const result = await adminServices.getAdminFromDB(filters, options);
 
-    res.status(200).json({
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
       message: "Admin fetched successfully",
       data: result.data,
-      meta: result.meta,
       success: true,
+      meta: result.meta,
     });
   } catch (err) {
-    res.status(500).json({
-      message: err?.name || "Internal server error",
-      success: false,
-      error: err,
-    });
+    next(err);
   }
 };
 
-const getSingleAdmin = async (req: Request, res: Response) => {
+const getSingleAdmin = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   const { id } = req.params;
   try {
     const result = await adminServices.getSingleAdminFromDB(id);
-    res.status(200).json({
+    sendResponse(res, {
+      statusCode: 200,
       message: "Admin fetched successfully",
       data: result,
       success: true,
     });
   } catch (err) {
-    res.status(500).json({
-      message: err?.name || "Internal server error",
-      success: false,
-      error: err,
-    });
+    next(err);
   }
 };
+
+const updateAdmin = async (req: Request, res: Response, next: NextFunction) => {
+  const { id } = req.params;
+  const updatedData = req.body;
+  try {
+    const result = await adminServices.updateAdminInDB(id, updatedData);
+    res.status(200).json({
+      message: "Admin updated successfully",
+      data: result,
+      success: true,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+const deleteAdmin = async (req: Request, res: Response, next: NextFunction) => {
+  const { id } = req.params;
+  try {
+    const result = await adminServices.deleteAdminFromDB(id);
+    sendResponse(res, {
+      statusCode: 200,
+      message: "Admin deleted successfully",
+      data: result,
+      success: true,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 const adminController = {
   getAdmin,
   getSingleAdmin,
+  updateAdmin,
+  deleteAdmin,
 };
 
 export default adminController;
