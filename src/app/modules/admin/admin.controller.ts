@@ -4,10 +4,12 @@ import { pick } from "../../shared/pick";
 import { adminFilterableFields } from "./admin.constants";
 import { sendResponse } from "../../shared/sendResponse";
 import httpStatus from "http-status";
-const getAdmin = async (req: Request, res: Response, next: NextFunction) => {
-  const filters = pick(req.query, adminFilterableFields);
-  const options = pick(req.query, ["limit", "page", "sortBy", "sortOrder"]);
-  try {
+import catchAsync from "../../shared/catchAsync";
+const getAdmin = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const filters = pick(req.query, adminFilterableFields);
+    const options = pick(req.query, ["limit", "page", "sortBy", "sortOrder"]);
+
     console.log(options);
 
     const result = await adminServices.getAdminFromDB(filters, options);
@@ -19,18 +21,13 @@ const getAdmin = async (req: Request, res: Response, next: NextFunction) => {
       success: true,
       meta: result.meta,
     });
-  } catch (err) {
-    next(err);
   }
-};
+);
 
-const getSingleAdmin = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  const { id } = req.params;
-  try {
+const getSingleAdmin = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { id } = req.params;
+
     const result = await adminServices.getSingleAdminFromDB(id);
     sendResponse(res, {
       statusCode: 200,
@@ -38,29 +35,27 @@ const getSingleAdmin = async (
       data: result,
       success: true,
     });
-  } catch (err) {
-    next(err);
   }
-};
+);
 
-const updateAdmin = async (req: Request, res: Response, next: NextFunction) => {
-  const { id } = req.params;
-  const updatedData = req.body;
-  try {
-    const result = await adminServices.updateAdminInDB(id, updatedData);
-    res.status(200).json({
+const updateAdmin = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { id } = req.params;
+    const updatedAdmin = req.body;
+    const result = await adminServices.updateAdminInDB(id, updatedAdmin);
+    sendResponse(res, {
+      statusCode: 200,
       message: "Admin updated successfully",
       data: result,
       success: true,
     });
-  } catch (err) {
-    next(err);
   }
-};
+);
 
-const deleteAdmin = async (req: Request, res: Response, next: NextFunction) => {
-  const { id } = req.params;
-  try {
+const deleteAdmin = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { id } = req.params;
+
     const result = await adminServices.deleteAdminFromDB(id);
     sendResponse(res, {
       statusCode: 200,
@@ -68,10 +63,8 @@ const deleteAdmin = async (req: Request, res: Response, next: NextFunction) => {
       data: result,
       success: true,
     });
-  } catch (err) {
-    next(err);
   }
-};
+);
 
 const adminController = {
   getAdmin,

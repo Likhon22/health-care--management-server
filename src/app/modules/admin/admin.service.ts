@@ -2,8 +2,13 @@ import { Admin, Prisma } from "@prisma/client";
 import { adminSearchAbleFields } from "./admin.constants";
 import { calculatePagination } from "../../helpars/paginationHelper";
 import prisma from "../../shared/prisma";
+import { IAdminFilterRequest } from "./admin.interface";
+import { IPaginationOptions } from "../../interfaces/pagination";
 
-const getAdminFromDB = async (params: Record<string, any>, options: any) => {
+const getAdminFromDB = async (
+  params: IAdminFilterRequest,
+  options: IPaginationOptions
+) => {
   const { searchTerm, ...filteredData } = params;
 
   const andCondition: Prisma.AdminWhereInput[] = [];
@@ -39,7 +44,7 @@ const getAdminFromDB = async (params: Record<string, any>, options: any) => {
       andCondition.push({
         AND: {
           [key]: {
-            equals: filteredData[key],
+            equals: (filteredData as any)[key],
           },
         },
       });
@@ -114,7 +119,7 @@ const deleteAdminFromDB = async (id: string): Promise<Admin | null> => {
         isDeleted: true,
       },
     });
-    const userDeletedData = await tsx.user.update({
+    await tsx.user.update({
       where: {
         email: adminDeletedData.email,
       },
