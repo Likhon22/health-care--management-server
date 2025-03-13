@@ -1,5 +1,6 @@
 import prisma from "../../shared/prisma";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 const loginUser = async (email: string, password: string) => {
   const isUserExists = await prisma.user.findUnique({
     where: {
@@ -19,7 +20,16 @@ const loginUser = async (email: string, password: string) => {
   if (!isPasswordMatched) {
     throw new Error("Invalid password");
   }
+  const jwtData = {
+    email: isUserExists.email,
+    role: isUserExists.role,
+  };
 
+  const accessToken = jwt.sign(jwtData, "secret", {
+    algorithm: "HS256",
+    expiresIn: "1h",
+  });
+  console.log(accessToken);
   return {
     user: isUserExists,
   };
