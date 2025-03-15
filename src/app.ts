@@ -13,7 +13,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 app.use(cookieParser());
 app.get("/", (req: Request, res: Response) => {
-  res.send("Hello World");
+  res.send("Server is running");
 });
 
 app.use("/api/v1", moduleRoutes);

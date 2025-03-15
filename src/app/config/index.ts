@@ -10,6 +10,14 @@ export default {
     jwtExpiresIn: process.env.JWT_EXPIRES_IN,
     jwtRefreshSecret: process.env.REFRESH_TOKEN_SECRET,
     jwtRefreshExpiresIn: process.env.REFRESH_TOKEN_EXPIRES_IN,
+    resetPasswordSecret: process.env.RESET_PASSWORD_SECRET,
+    resetPasswordExpiresIn: process.env.RESET_PASSWORD_EXPIRES_IN,
   },
+  reset_password_url: process.env.RESET_PASSWORD_URL,
   bcrypt_salt_round: process.env.BCRYPT_SALT_ROUND,
+  email: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASSWORD,
+    host: process.env.EMAIL_HOST,
+  },
 };

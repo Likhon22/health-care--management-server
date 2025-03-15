@@ -9,6 +9,7 @@ import config from "../../config";
 import { TJwtPayload } from "../../interfaces/jwt";
 import { JwtPayload } from "jsonwebtoken";
 import ApiError from "../../errors/ApiError";
+import { sendPasswordResetEmail } from "./emailSender";
 
 const loginUser = async (email: string, password: string) => {
   const isUserExists = await prisma.user.findUnique({
@@ -110,11 +111,67 @@ const changePassword = async (
   });
   return null;
 };
+const forgetPassword = async (email: string) => {
+  const isUserExists = await prisma.user.findUnique({
+    where: {
+      email: email,
+    },
+  });
+  if (!isUserExists) {
+    throw new ApiError(401, "User not found");
+  }
+  const jwtPayload: TJwtPayload = {
+    email: isUserExists.email,
+    role: isUserExists.role,
+  };
+  const resetPasswordToken = createToken(
+    jwtPayload,
+    config.jwt.resetPasswordSecret as string,
+    config.jwt.resetPasswordExpiresIn as string
+  );
+
+  const resetPasswordLink = `${config.reset_password_url}?id=${isUserExists.type}&token=${resetPasswordToken}`;
+  // await sendPasswordResetEmail(isUserExists.email, resetPasswordLink);
+  console.log(resetPasswordLink);
+  return null;
+};
+const resetPassword = async (
+  token: string,
+  Payload: { id: string; newPassword: string }
+) => {
+  const isUserExists = await prisma.user.findUnique({
+    where: {
+      type: Payload.id,
+    },
+  });
+  if (!isUserExists) {
+    throw new ApiError(401, "User not found");
+  }
+  const decoded = verifyToken(token, config.jwt.resetPasswordSecret as string);
+  if (decoded.email !== isUserExists.email) {
+    throw new ApiError(401, "Invalid token");
+  }
+  const hashedPassword = await bcrypt.hash(
+    Payload.newPassword,
+    Number(config.bcrypt_salt_round)
+  );
+  await prisma.user.update({
+    where: {
+      email: isUserExists.email,
+    },
+    data: {
+      password: hashedPassword,
+    },
+  });
+  return null;
+};
 
 const authServices = {
   loginUser,
   refreshToken,
   changePassword,
+  forgetPassword,
+  resetPassword,
 };
 
 export default authServices;
