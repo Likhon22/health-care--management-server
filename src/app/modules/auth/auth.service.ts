@@ -1,11 +1,14 @@
 import prisma from "../../shared/prisma";
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
+
 import { createToken } from "../../shared/createToken";
-import { TJwtPayload } from "../../interfaces/jwt";
+
 import verifyToken from "../../shared/verifyToken";
 import { UserStatus } from "@prisma/client";
 import config from "../../config";
+import { TJwtPayload } from "../../interfaces/jwt";
+import { JwtPayload } from "jsonwebtoken";
+import ApiError from "../../errors/ApiError";
 
 const loginUser = async (email: string, password: string) => {
   const isUserExists = await prisma.user.findUnique({
@@ -75,10 +78,43 @@ const refreshToken = async (refreshToken: string) => {
     throw new Error("Invalid refresh token");
   }
 };
+const changePassword = async (
+  user: JwtPayload,
+  oldPassword: string,
+  newPassword: string
+) => {
+  const userData = await prisma.user.findFirstOrThrow({
+    where: {
+      email: user.email,
+    },
+  });
+  const isPasswordMatched = await bcrypt.compare(
+    oldPassword,
+    userData.password
+  );
+  if (!isPasswordMatched) {
+    throw new ApiError(401, "Invalid old password");
+  }
+  const hashedPassword = await bcrypt.hash(
+    newPassword,
+    Number(config.bcrypt_salt_round)
+  );
+  await prisma.user.update({
+    where: {
+      email: user.email,
+    },
+    data: {
+      password: hashedPassword,
+      needsPasswordChange: false,
+    },
+  });
+  return null;
+};
 
 const authServices = {
   loginUser,
   refreshToken,
+  changePassword,
 };
 
 export default authServices;

@@ -11,4 +11,5 @@ export default {
     jwtRefreshSecret: process.env.REFRESH_TOKEN_SECRET,
     jwtRefreshExpiresIn: process.env.REFRESH_TOKEN_EXPIRES_IN,
   },
+  bcrypt_salt_round: process.env.BCRYPT_SALT_ROUND,
 };
