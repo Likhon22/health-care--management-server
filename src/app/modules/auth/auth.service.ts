@@ -5,6 +5,7 @@ import { createToken } from "../../shared/createToken";
 import { TJwtPayload } from "../../interfaces/jwt";
 import verifyToken from "../../shared/verifyToken";
 import { UserStatus } from "@prisma/client";
+import config from "../../config";
 
 const loginUser = async (email: string, password: string) => {
   const isUserExists = await prisma.user.findUnique({
@@ -31,9 +32,17 @@ const loginUser = async (email: string, password: string) => {
     role: isUserExists.role,
   };
 
-  const accessToken = createToken(jwtPayload, "access-secret", "15m");
+  const accessToken = createToken(
+    jwtPayload,
+    config.jwt.jwtSecret as string,
+    config.jwt.jwtExpiresIn as string
+  );
 
-  const refreshToken = createToken(jwtPayload, "refresh-token", "30d");
+  const refreshToken = createToken(
+    jwtPayload,
+    config.jwt.jwtRefreshSecret as string,
+    config.jwt.jwtRefreshExpiresIn as string
+  );
   return {
     accessToken,
     needsPasswordChange: isUserExists.needsPasswordChange,
@@ -42,7 +51,10 @@ const loginUser = async (email: string, password: string) => {
 };
 const refreshToken = async (refreshToken: string) => {
   try {
-    const decoded = verifyToken(refreshToken);
+    const decoded = verifyToken(
+      refreshToken,
+      config.jwt.jwtRefreshSecret as string
+    );
     const userData = await prisma.user.findUniqueOrThrow({
       where: {
         email: decoded.email,
@@ -53,7 +65,11 @@ const refreshToken = async (refreshToken: string) => {
       email: userData.email,
       role: userData.role,
     };
-    const accessToken = createToken(jwtPayload, "access-secret", "15m");
+    const accessToken = createToken(
+      jwtPayload,
+      config.jwt.jwtSecret as string,
+      config.jwt.jwtExpiresIn as string
+    );
     return accessToken;
   } catch (error) {
     throw new Error("Invalid refresh token");

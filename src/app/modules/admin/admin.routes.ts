@@ -3,6 +3,7 @@ import adminController from "./admin.controller";
 
 const router = Router();
 
+
 router.get("/", adminController.getAdmin);
 router.get("/:id", adminController.getSingleAdmin);
 router.patch("/:id", adminController.updateAdmin);

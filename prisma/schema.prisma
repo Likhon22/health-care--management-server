@@ -16,7 +16,7 @@ datasource db {
 
 // user model
 
-model User {
+  model User {
   type String @id @default(uuid())
   email String @unique
   password String
