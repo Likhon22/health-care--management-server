@@ -3,7 +3,7 @@ import userServices from "./user.service";
 
 const createAdmin = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const result = await userServices.createAdminIntoDB(req.body);
+    const result = await userServices.createAdminIntoDB(req);
     res.status(200).json({
       message: "Admin created successfully",
       data: result,
