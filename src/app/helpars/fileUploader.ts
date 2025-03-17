@@ -27,9 +27,9 @@ const sendImageToCloudinary = async (file: {
   originalname: string;
 }) => {
   cloudinary.config({
-    cloud_name: "dcfmfuihb",
-    api_key: "796993972171377",
-    api_secret: "pRSXKHnv3Jy_-13gN4lYiNWGmg0",
+    cloud_name: config.cloudinary.cloud_name,
+    api_key: config.cloudinary.api_key,
+    api_secret: config.cloudinary.api_secret,
   });
 
   const uniquePublicId = `${file.originalname}-${Date.now()}`;
