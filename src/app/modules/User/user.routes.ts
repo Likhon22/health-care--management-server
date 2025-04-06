@@ -22,4 +22,11 @@ router.post(
   userControllers.createAdmin
 );
 
+router.post(
+  "/create-doctor",
+  upload.single("file"),
+  parseBodyData,
+  validateRequest(userValidations.createDoctor),
+  userControllers.createDoctor
+);
 export const userRoutes = router;
