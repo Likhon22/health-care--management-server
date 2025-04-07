@@ -2,6 +2,7 @@ import { Router } from "express";
 import { adminRoutes } from "../modules/admin/admin.routes";
 import { userRoutes } from "../modules/User/user.routes";
 import { authRoutes } from "../modules/auth/auth.routes";
+import { doctorRoutes } from "../modules/doctor/doctor.routes";
 
 const router = Router();
 
@@ -21,6 +22,10 @@ const moduleRouters: TModuleRoutes[] = [
   {
     route: authRoutes,
     path: "/auth",
+  },
+  {
+    route: doctorRoutes,
+    path: "/doctor",
   },
 ];
 
