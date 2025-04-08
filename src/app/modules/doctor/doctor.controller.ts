@@ -13,7 +13,21 @@ const getDoctors = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+export const getSingleDoctor = catchAsync(
+  async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const result = await doctorServices.getSingleDoctorFromDB(id);
+    sendResponse(res, {
+      message: "Doctor fetched successfully",
+      success: true,
+      statusCode: 200,
+      data: result,
+    });
+  }
+);
+
 const doctorController = {
   getDoctors,
+  getSingleDoctor,
 };
 export default doctorController;
